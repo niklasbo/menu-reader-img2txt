@@ -1,15 +1,13 @@
 # image-ocr-service
 
-Handles OCR and Client-REST-Calls
+Handles OCR 
 
 ## API
 | Path          | Parameter   | Function                           |
 |---------------|-------------|------------------------------------|
 | /             | none        | online check                       |
 | /ocr          | none        | reads image and does ocr on it     |
-| /current-week | none        | get the data for current week      |
-| /week/:weekId | weekId a number | get the data for given weeknum |
-
+| /ocr/:weekId  | weekId a number | reads the image with the given id and does ocr on it |
 
 ### Run with
         
