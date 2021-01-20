@@ -19,18 +19,17 @@ app.get('/', (req, res) => {
 app.get('/ocr', async (req, res) => {
     try {
         const restResponse = await axios.get(restServiceUrl + '/current-week')
-        console.log(restResponse.status)
+        if (restResponse.status === 200) {
+            res.status(208).send('Already converted!')
+            return
+        }
     } catch (err) {
-        console.log(err)
         res.status(555).send('Error while requesting the REST service: ' + err.message)
+        return
     }
     try {
         resultObject = await handleOcr()
-        if (!res.headersSent) {
-            res.status(200).send(resultObject)
-        } else {
-            res.write(resultObject)
-        }
+        res.status(200).send(resultObject)
     } catch (err) {
         console.log(err)
         res.status(500).send(err.message)
@@ -42,13 +41,10 @@ app.get('/ocr/:weeknum', async (req, res) => {
     if (isNaN(weeknum)) {
         res.status(400).send('Path parameter weeknum is not a number. Given: "' + req.params.weeknum + '" Type: ' + typeof req.params.weeknum)
     }
+    //TODO add already converted check like above
     try {
         resultObject = await handleOcr(weeknum)
-        if (!res.headersSent) {
-            res.status(200).send(resultObject)
-        } else {
-            res.send(resultObject)
-        }
+        res.status(200).send(resultObject)
     } catch (err) {
         console.log(err)
         res.status(500).send(err.message)

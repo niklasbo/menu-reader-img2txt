@@ -63,12 +63,12 @@ async function getImageOfWeeknum(weeknumToRead) {
     throw new Error('No results returned, is this WeeknumImage already in database?')
 }
 
-async function saveWeekDayMeal(weekDayMeal) {
-    weekDayMeal.save(function (err) {
+async function saveWeekDayMeal(filledWeek) {
+    WeekDayMeal(filledWeek).save(function (err) {
         if (err) {
             throw err
         }
-        console.log('Weeknum ' + weekDayMeal.weeknum + ' saved!')
+        console.log('Weeknum ' + filledWeek.weeknum + ' saved!')
     });
 }
 
