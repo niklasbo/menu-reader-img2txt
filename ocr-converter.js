@@ -1,4 +1,4 @@
-const { WeekDayMeal, Meal, Day } = require("./database");
+const { Meal, Week, Day } = require("./models")
 const { getMondayPlusXDateOfWeeknum } = require("./date-utils");
 
 module.exports = {
@@ -7,7 +7,7 @@ module.exports = {
         var dayCounter = 0
         results.forEach(day => {
             const meals = []
-            const noZeroPrices = removeZeroPrice(day)
+            const noZeroPrices = removeZeroPrices(day)
             const mealsRaw = splitMultipleMealsOnDay(noZeroPrices)
 
             mealsRaw.forEach(meal => {
@@ -24,22 +24,21 @@ module.exports = {
                 //console.log('Further: ' + middleParts.furtherInformation)
                 //console.log('Type: ' + middleParts.types)
                 meals.push(new Meal(
-                    {
-                        title: title.trim(),
-                        price: price.trim(),
-                        furtherInformation: middleParts.furtherInformation,
-                        types: middleParts.types
-                    }))
+                    title.trim(),
+                    price.trim(),
+                    middleParts.furtherInformation,
+                    middleParts.types
+                ))
             });
             const dayDetails = getMondayPlusXDateOfWeeknum(weeknum, dayCounter)
-            days.push(new Day({ day: dayDetails.day, date: dayDetails.date, meals: meals }))
+            days.push(new Day(dayDetails.day, dayDetails.date, meals))
             dayCounter++
         });
-        return new WeekDayMeal({ weeknum: weeknum, days: days })
+        return new Week(weeknum, days)
     }
 }
 
-function removeZeroPrice(text) {
+function removeZeroPrices(text) {
     return text.replace(/ *0,00€| *0,00 €/g, '')
 }
 
@@ -80,8 +79,17 @@ function correctTextComma(text) {
 }
 
 function splitIntoParts(text) {
-    const indexOfLastOpeningParenthesis = text.lastIndexOf('(')
-    const indexOfLastClosingParenthesis = text.lastIndexOf(')')
+    var indexOfLastOpeningParenthesis = text.lastIndexOf('(')
+    var indexOfLastClosingParenthesis = text.lastIndexOf(')')
+    if (indexOfLastOpeningParenthesis === -1) {
+        const firstEuroSign = text.indexOf('€')
+        const newLineBeforeEuroSign = text.substring(0, firstEuroSign).lastIndexOf('\n')
+        indexOfLastOpeningParenthesis = text.substring(0, newLineBeforeEuroSign - 1).lastIndexOf('\n')
+    }
+    if (indexOfLastClosingParenthesis === -1) {
+        const firstEuroSign = text.indexOf('€')
+        indexOfLastClosingParenthesis = text.substring(0, firstEuroSign).lastIndexOf('\n')
+    }
     return {
         title: text.substring(0, indexOfLastOpeningParenthesis),
         textInParenthesis: text.substring(indexOfLastOpeningParenthesis + 1, indexOfLastClosingParenthesis),

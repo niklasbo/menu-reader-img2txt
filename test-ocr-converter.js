@@ -1,11 +1,11 @@
 const test = require('ava')
 const { Meal, Week, Day } = require("./models")
-const { ocrResultsToWeekDaysAndMeals } = require('./ocr-converter')
+const { ocrResultsToWeekDayMeal } = require('./ocr-converter')
 
-test('test-one-day', t => {
-    t.deepEqual(ocrResultsToWeekDaysAndMeals(50, test_data_one_day),
+test('day', t => {
+    t.deepEqual(ocrResultsToWeekDayMeal(50, test_data_one_day),
         new Week(50, [
-            new Day('Montag', '07.12.2020',
+            new Day('Montag', '13.12.2021',
                 [
                     new Meal('Aus der Kokotte Hackfleisch-Kartoffel-Auflauf mit Mozzarella', '4,50€', ['aw', 'uw', 'am', '23', 'bc'], ['Rind', 'Schwein']),
                     new Meal('Caponata di melanzane mit Auberginen-Tomatensauce mit Kapern, Rosinen, Oliven, Pinienkerne, Couscous & Joghurt', '4,00€ 2,40€', ['aw', 'uw', '2', '23', 'am', 'au'], ['Vegetarisch']),
@@ -14,10 +14,34 @@ test('test-one-day', t => {
     )
 });
 
-test('test-one-week', async t => {
-    t.deepEqual(ocrResultsToWeekDaysAndMeals(50, test_data_week),
+test('day-closing-parenthesis-missing', t => {
+    t.deepEqual(ocrResultsToWeekDayMeal(50, test_data_one_day_broken_closing_parenthesis),
         new Week(50, [
-            new Day('Montag', '07.12.2020',
+            new Day('Montag', '13.12.2021',
+                [
+                    new Meal('Aus der Kokotte Hackfleisch-Kartoffel-Auflauf mit Mozzarella', '4,50€', ['aw', 'uw', 'am', '23', 'bc'], ['Rind', 'Schwein']),
+                    new Meal('Caponata di melanzane mit Auberginen-Tomatensauce mit Kapern, Rosinen, Oliven, Pinienkerne, Couscous & Joghurt', '4,00€ 2,40€', ['aw', 'uw', '2', '23', 'am', 'au'], ['Vegetarisch']),
+                ]),
+        ])
+    )
+});
+
+test('day-opening-parenthesis-missing', t => {
+    t.deepEqual(ocrResultsToWeekDayMeal(50, test_data_one_day_broken_opening_parenthesis),
+        new Week(50, [
+            new Day('Montag', '13.12.2021',
+                [
+                    new Meal('Aus der Kokotte Hackfleisch-Kartoffel-Auflauf mit Mozzarella', '4,50€', ['aw', 'uw', 'am', '23', 'bc'], ['Rind', 'Schwein']),
+                    new Meal('Caponata di melanzane mit Auberginen-Tomatensauce mit Kapern, Rosinen, Oliven, Pinienkerne, Couscous & Joghurt', '4,00€ 2,40€', ['aw', 'uw', '2', '23', 'am', 'au'], ['Vegetarisch']),
+                ]),
+        ])
+    )
+});
+
+test('week', async t => {
+    t.deepEqual(ocrResultsToWeekDayMeal(50, test_data_week),
+        new Week(50, [
+            new Day('Montag', '13.12.2021',
                 [
                     new Meal(
                         'Aus der Kokotte Hackfleisch-Kartoffel-Auflauf mit Mozzarella',
@@ -31,7 +55,7 @@ test('test-one-week', async t => {
                         ['aw', 'uw', '2', '23', 'am', 'au'],
                         ['Vegetarisch']
                     )]),
-            new Day('Dienstag', '08.12.2020', [
+            new Day('Dienstag', '14.12.2021', [
                 new Meal(
                     'Kartoffel-Lauch-Gulasch mit Ei frischem Lauch, Möhren, Kartoffeln und roten Zwiebeln',
                     '4,00€ 2,40€',
@@ -44,7 +68,7 @@ test('test-one-week', async t => {
                     ['aw', 'uw', 'af', 'am', 'bm'],
                     ['Fisch']
                 )]),
-            new Day('Mittwoch', '09.12.2020', [
+            new Day('Mittwoch', '15.12.2021', [
                 new Meal(
                     'Wildgulasch im Pilzrahmsauce dazu hausgemachter Apfelrotkohl und Spätzle',
                     '8,50€',
@@ -57,7 +81,7 @@ test('test-one-week', async t => {
                     ['2', '23', 'bc'],
                     ['Vegan']
                 )]),
-            new Day('Donnerstag', '10.12.2020', [
+            new Day('Donnerstag', '16.12.2021', [
                 new Meal(
                     'Gebratenes Putenschnitzel an Erbsen & Möhren in Petersilienrahm dazu Dampfkartoffeln',
                     '5,60€ 3,40€',
@@ -70,7 +94,7 @@ test('test-one-week', async t => {
                     ['am', 'ae', '2', 'aw', 'uw'],
                     ['Vegetarisch']
                 )]),
-            new Day('Freitag', '11.12.2020', [
+            new Day('Freitag', '17.12.2021', [
                 new Meal(
                     'Gebratene Currywurst mit Pommes frites',
                     '3,50€ 2,10€',
@@ -88,9 +112,16 @@ test('test-one-week', async t => {
     )
 });
 
-
 const test_data_one_day = [
     'Gutes aus der Region\nAus der Kokotte Hackfleisch-\nKartoffel-Auflauf mit Mozzarella\n(R,S,aw,uw,am,23,bc)\n4,50€\nCaponata di melanzane mit\nAuberginen-Tomatensauce mit\nKapern , Rosinen, Oliven,\nPinienkerne ,Couscous & Joghurt\n(V,aw,uw,2,23,am,au)\n4,00 € 2,40€\n',
+]
+
+const test_data_one_day_broken_closing_parenthesis = [
+    'Gutes aus der Region\nAus der Kokotte Hackfleisch-\nKartoffel-Auflauf mit Mozzarella\n(R,S,aw,uw,am,23,bc\n4,50€\nCaponata di melanzane mit\nAuberginen-Tomatensauce mit\nKapern , Rosinen, Oliven,\nPinienkerne ,Couscous & Joghurt\n(V,aw,uw,2,23,am,au)\n4,00 € 2,40€\n',
+]
+
+const test_data_one_day_broken_opening_parenthesis = [
+    'Gutes aus der Region\nAus der Kokotte Hackfleisch-\nKartoffel-Auflauf mit Mozzarella\nR,S,aw,uw,am,23,bc)\n4,50€\nCaponata di melanzane mit\nAuberginen-Tomatensauce mit\nKapern , Rosinen, Oliven,\nPinienkerne ,Couscous & Joghurt\n(V,aw,uw,2,23,am,au)\n4,00 € 2,40€\n',
 ]
 
 const test_data_week = [

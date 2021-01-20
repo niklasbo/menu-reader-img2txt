@@ -3,18 +3,27 @@ const fs = require('fs')
 const stream = require('stream')
 const tmp = require('tmp');
 const ocr = require('./ocr')
+const axios = require('axios');
 const { ocrResultsToWeekDayMeal } = require('./ocr-converter');
 const { getImageOfWeeknum, saveWeekDayMeal } = require('./database');
 const { getCurrentWeeknum } = require('./date-utils');
 
 const app = express()
-const port = process.env.PORT || 5000
+const port = process.env.PORT || 6000
+const restServiceUrl = process.env.REST_SERVICE_URL || 'https://menu-rest-service.herokuapp.com'
 
 app.get('/', (req, res) => {
     res.send('online')
 })
 
 app.get('/ocr', async (req, res) => {
+    try {
+        const restResponse = await axios.get(restServiceUrl + '/current-week')
+        console.log(restResponse.status)
+    } catch (err) {
+        console.log(err)
+        res.status(555).send('Error while requesting the REST service: ' + err.message)
+    }
     try {
         resultObject = await handleOcr()
         if (!res.headersSent) {

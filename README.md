@@ -13,6 +13,10 @@ Handles OCR
         
     node app.js
 
+### Run tests with
+
+    npm run test
+
 ### Environment Variables 
     
 - MONGODB_CONNECTION_STRING
