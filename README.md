@@ -1,4 +1,4 @@
-# image-ocr-service
+# Menu Reader: Image OCR Service
 
 Handles OCR 
 
