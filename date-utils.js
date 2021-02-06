@@ -3,8 +3,8 @@ const moment = require('moment')
 
 module.exports = {
 
-    getCurrentWeeknum: function getCurrentWeeknum() {
-        return moment().locale('de').week()
+    getCurrentWeeknumPlusXWeeks: function getCurrentWeeknumPlusXWeeks(plusX = 0) {
+        return moment().locale('de').add(plusX, 'weeks').week()
     },
 
     getMondayPlusXDateOfWeeknum: function getMondayPlusXDateOfWeeknum(weeknum, plusX) {

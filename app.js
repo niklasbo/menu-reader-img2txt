@@ -5,7 +5,7 @@ const tmp = require('tmp');
 const ocr = require('./ocr')
 const { ocrResultsToWeekDayMeal } = require('./ocr-converter');
 const { getImageOfWeeknum, saveWeekDayMeal, getWeekDayMealOfWeeknum } = require('./database');
-const { getCurrentWeeknum } = require('./date-utils');
+const { getCurrentWeeknumPlusXWeeks } = require('./date-utils');
 
 const app = express()
 const port = process.env.PORT || 6000
@@ -27,6 +27,41 @@ app.get('/ocr', async (req, res) => {
             res.status(500).send(err.message)
         }
     }
+})
+
+app.get('/ocr-full', async (req, res) => {
+    const thisWeeknum = getCurrentWeeknumPlusXWeeks()
+    const nextWeeknum = getCurrentWeeknumPlusXWeeks(1)
+    const thisWeeknumAlreadyConverted = await hasWeekAlreadyConverted(thisWeeknum)
+    const nextWeeknumAlreadyConverted = await hasWeekAlreadyConverted(nextWeeknum)
+    if (thisWeeknumAlreadyConverted && nextWeeknumAlreadyConverted) {
+        res.status(208).send(`Week ${thisWeeknum} and ${nextWeeknum} are already converted!`)
+        return
+    }
+    if (thisWeeknumAlreadyConverted && !nextWeeknumAlreadyConverted) {
+        handleOcr(nextWeeknum).catch((err) => {
+            console.log('Converting failed of week ' + nextWeeknum + ' failed. Reason: ' + err)
+        })
+        res.status(290).send(`Week ${thisWeeknum} is already converted and converting for week ${nextWeeknum} started!`)
+        return
+    }
+    if (!thisWeeknumAlreadyConverted && nextWeeknumAlreadyConverted) {
+        handleOcr(thisWeeknum).catch((err) => {
+            console.log('Converting failed of week ' + thisWeeknum + ' failed. Reason: ' + err)
+        })
+        res.status(291).send(`Week ${nextWeeknum} is already converted and converting for week ${thisWeeknum} started!`)
+        return
+    }
+
+    res.status(292).send(`Converting of week ${thisWeeknum} and ${nextWeeknum} started!`)
+    handleOcr(thisWeeknum)
+        .catch((err) => {
+            console.log('Converting failed of week ' + thisWeeknum + ' failed. Reason: ' + err)})
+        .then(() => {
+            handleOcr(nextWeeknum).catch((err) => {
+                console.log('Converting failed of week ' + nextWeeknum + ' failed. Reason: ' + err)
+            })
+        })
 })
 
 app.get('/ocr/:weeknum', async (req, res) => {
@@ -57,18 +92,18 @@ app.listen(port, () => {
     console.log(`Listening on ${port}`)
 })
 
-async function hasWeekAlreadyConverted(weeknum = getCurrentWeeknum()) {
+async function hasWeekAlreadyConverted(weeknum = getCurrentWeeknumPlusXWeeks()) {
     try {
         await getWeekDayMealOfWeeknum(weeknum);
         return true
     } catch (err) {
-        console.log(err)
+        // console.log(err)
         // no data found in database, start ocr
+        return false
     }
-    return false
 }
 
-async function handleOcr(weeknum = getCurrentWeeknum()) {
+async function handleOcr(weeknum = getCurrentWeeknumPlusXWeeks()) {
     const jpegImageAsBase64String = await getImageOfWeeknum(weeknum)
     console.log(jpegImageAsBase64String.length)
 

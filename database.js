@@ -75,9 +75,13 @@ async function saveWeekDayMeal(filledWeek) {
 async function getWeekDayMealOfWeeknum(weeknumToRead) {
     const result = await WeekDayMeal.findOne({ weeknum: weeknumToRead }).exec()
     if (result != null) {
-        return result
+        return new Promise((resolve, reject) => {    
+            resolve(result);
+        })
     }
-    throw new Error(`No results returned, is this WeekDayMeal (weeknum = ${weeknumToRead}) as object in database?`)
+    return new Promise((resolve, reject) => {    
+        reject(`No results returned, is this WeekDayMeal (weeknum = ${weeknumToRead}) as object in database?`);
+    })
 }
 
 exports.getImageOfWeeknum = getImageOfWeeknum
