@@ -60,24 +60,28 @@ async function getImageOfWeeknum(weeknumToRead) {
     if (result != null) {
         return result.jpegImageAsBase64String
     }
-    throw new Error('No results returned, is this WeeknumImage already in database?')
+    throw new Error(`No results returned, is this WeeknumImage (weeknum = ${weeknumToRead}) already in database?`)
 }
 
-async function saveWeekDayMeal(weekDayMeal) {
-    weekDayMeal.save(function (err) {
+async function saveWeekDayMeal(filledWeek) {
+    WeekDayMeal(filledWeek).save(function (err) {
         if (err) {
             throw err
         }
-        console.log('Weeknum ' + weekDayMeal.weeknum + ' saved!')
+        console.log(`Weeknum ${filledWeek.weeknum} saved!`)
     });
 }
 
 async function getWeekDayMealOfWeeknum(weeknumToRead) {
     const result = await WeekDayMeal.findOne({ weeknum: weeknumToRead }).exec()
     if (result != null) {
-        return result
+        return new Promise((resolve, reject) => {    
+            resolve(result);
+        })
     }
-    throw new Error('No results returned, is this WeekDayMeal as object in database?')
+    return new Promise((resolve, reject) => {    
+        reject(`No results returned, is this WeekDayMeal (weeknum = ${weeknumToRead}) as object in database?`);
+    })
 }
 
 exports.getImageOfWeeknum = getImageOfWeeknum

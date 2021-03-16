@@ -1,5 +1,5 @@
 {
   "name": "image-ocr-service",
-  "description": "Node JS Express REST Server for image ocr and request handling.",
+  "description": "Node JS Express server for image ocr.",
   "addons": [ ]
 }
