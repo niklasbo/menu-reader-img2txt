@@ -53,6 +53,7 @@ const commonLines = [
     'Gutes aus der Region',
     'P THE J, rß VEQETARIAN s DUTCHER ', //event Vegetarian Butcher
     'Ea ET UMDANKEN E 50  x d ', // event Jetzt Umdenken
+    'Na C en NDET 50  d ', // event Jetzt Umdenken
 ] 
 function removeCommonLines(text) {
     var textWithoutCommonLines = text
