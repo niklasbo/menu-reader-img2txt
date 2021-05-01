@@ -26,11 +26,12 @@ module.exports = {
             if (o != 0) {
                 rotateAngle = 90
             }
-            await image.rotate(rotateAngle, function (err) {
-                if (err) {
-                    continue;
-                }
-            }).writeAsync(tempFilePath)
+            try {
+                await image.rotate(rotateAngle).writeAsync(tempFilePath)
+            } catch(err) {
+                console.log(err)
+                continue
+            }
             // test orientation with headline
             const { data: { text } } = await worker.recognize(tempFilePath, { rectangle: rectangleOrientationTest })
             if (checkOrientation(text)) {
