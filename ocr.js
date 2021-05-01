@@ -1,4 +1,6 @@
 const path = require('path');
+const Jimp = require('jimp');
+const tmp = require('tmp');
 const { createWorker } = require('tesseract.js')
 
 module.exports = {
@@ -15,15 +17,49 @@ module.exports = {
         await worker.setParameters({
             tessedit_char_whitelist: 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 äöüÄÖÜß-(),&€',
         });
+        // load image
+        const image = await Jimp.read(filepath)
+        const tempFilePath = tmp.dirSync().name + "rotatedImage.jpeg"
+        var rotateAngle = 0
+        // identify orientation of plan, check 0, 90, 180 and 270 degree
+        for (let o = 0; o < 4; o++) {
+            if (o != 0) {
+                rotateAngle = 90
+            }
+            await image.rotate(rotateAngle, function (err) {
+                if (err) {
+                    continue;
+                }
+            }).writeAsync(tempFilePath)
+            // test orientation with headline
+            const { data: { text } } = await worker.recognize(tempFilePath, { rectangle: rectangleOrientationTest })
+            if (checkOrientation(text)) {
+                console.log(`Orientation found, rotated ${o*90} degrees!`)
+                break;
+            }
+        }
 
+        // recognize meals
         const values = []
         for (let i = 0; i < rectangles.length; i++) {
-            const { data: { text } } = await worker.recognize(filepath, { rectangle: rectangles[i] })
+            const { data: { text } } = await worker.recognize(tempFilePath, { rectangle: rectangles[i] })
             values.push(text)
         }
         await worker.terminate()
         return values
     }
+}
+
+orientationIdentifierWordList = ["speiseplan", "dienstag", "mittwoch", "donnerstag", "woche", "sodexo"]
+function checkOrientation(text) {
+    const lowerCaseText = text.toLowerCase()
+    for (let i = 0; i < orientationIdentifierWordList.length; i++) {
+        if (lowerCaseText.contains(orientationIdentifierWordList[i])) {
+            console.log(`Found word ${orientationIdentifierWordList[i]}`)
+            return true
+        }
+    }
+    return false
 }
 
 const heightStart = process.env.HEIGHT_START || 260
@@ -39,6 +75,13 @@ const fourthStart = process.env.FOURTH_START || 1210
 const fourthEnd = process.env.FOURTH_END || 1490
 const fifthStart = process.env.FIFTH_START || 1535
 const fifthEnd = process.env.FIFTH_END || 1785
+
+const rectangleOrientationTest = {
+    left: secondStart,
+    top: 0,
+    width: fourthStart - secondStart,
+    height: heightStart,
+}
 
 const rectangleHeight = heightEnd - heightStart;
 const rectangles = [
