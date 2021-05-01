@@ -55,7 +55,7 @@ orientationIdentifierWordList = ["speiseplan", "dienstag", "mittwoch", "donnerst
 function checkOrientation(text) {
     const lowerCaseText = text.toLowerCase()
     for (let i = 0; i < orientationIdentifierWordList.length; i++) {
-        if (lowerCaseText.contains(orientationIdentifierWordList[i])) {
+        if (lowerCaseText.includes(orientationIdentifierWordList[i])) {
             console.log(`Found word ${orientationIdentifierWordList[i]}`)
             return true
         }
