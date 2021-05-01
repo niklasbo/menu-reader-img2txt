@@ -54,6 +54,7 @@ const commonLines = [
     'P THE J, rß VEQETARIAN s DUTCHER ', //event Vegetarian Butcher
     'Ea ET UMDANKEN E 50  x d ', // event Jetzt Umdenken
     'Na C en NDET 50  d ', // event Jetzt Umdenken
+    'AAEBa, S& & 4 n f ypyooS ', // event Pasta Basta
 ] 
 function removeCommonLines(text) {
     var textWithoutCommonLines = text
