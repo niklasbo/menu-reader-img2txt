@@ -2,6 +2,9 @@
 
 Handles OCR 
 
+## Archive Note :ledger:
+Due to Covid-19 pandemic this service was archived. Everybody works remotely so there is no need for this anymore.
+
 ## API
 | Path          | Parameter   | Function                           |
 |---------------|-------------|------------------------------------|
